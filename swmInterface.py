@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
+import hashlib
 
 def generate_and_save_keypair():
     try:
@@ -122,6 +123,24 @@ def verify_signature(input_file, signature, public_key):
     except Exception as e:
         messagebox.showerror("Erreur de vérification", f"La vérification de la signature a échoué : {e}")
 
+def calculate_hash(file_path):
+    hasher = hashlib.sha256()
+    with open(file_path, 'rb') as file:
+        for chunk in iter(lambda: file.read(4096), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+def calculate_file_hash():
+    file_path = select_file("Sélectionner le fichier pour calculer l'empreinte")
+    if not file_path:
+        return
+    
+    try:
+        file_hash = calculate_hash(file_path)
+        messagebox.showinfo("Empreinte calculée", f"L'empreinte du fichier est : {file_hash}")
+    except Exception as e:
+        messagebox.showerror("Erreur", f"Une erreur est survenue lors du calcul de l'empreinte : {e}")
+
 def encrypt():
     public_key_file = select_file("Sélectionner la clé publique")
     if not public_key_file:
@@ -211,19 +230,22 @@ def main():
     frame.pack(padx=10, pady=10)
     
     btn_generate_keypair = tk.Button(frame, text="Générer et sauvegarder la paire de clés", command=generate_and_save_keypair)
-    btn_generate_keypair.grid(row=0, column=0, padx=5, pady=5)
+    btn_generate_keypair.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+    
+    btn_calculate_hash = tk.Button(frame, text="Calculer l'empreinte d'un fichier", command=calculate_file_hash)
+    btn_calculate_hash.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
     
     btn_encrypt = tk.Button(frame, text="Chiffrer un fichier", command=encrypt)
-    btn_encrypt.grid(row=1, column=0, padx=5, pady=5)
+    btn_encrypt.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
     
     btn_decrypt = tk.Button(frame, text="Déchiffrer un fichier", command=decrypt)
-    btn_decrypt.grid(row=2, column=0, padx=5, pady=5)
+    btn_decrypt.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
     
     btn_sign = tk.Button(frame, text="Signer un fichier", command=sign)
-    btn_sign.grid(row=3, column=0, padx=5, pady=5)
+    btn_sign.grid(row=3, column=0, padx=5, pady=5, sticky="ew")
     
     btn_verify = tk.Button(frame, text="Vérifier la signature", command=verify)
-    btn_verify.grid(row=4, column=0, padx=5, pady=5)
+    btn_verify.grid(row=4, column=0, padx=5, pady=5, sticky="ew")
     
     root.mainloop()
 
